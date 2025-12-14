@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: my-board-site
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NAS_PATH=/data
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-key}
+    volumes:
+      - ./data:/data
+      - /volume1/site/data:/data  # NAS 경로 (Synology)
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
