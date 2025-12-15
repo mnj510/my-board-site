@@ -1,0 +1,29 @@
+name: Deploy to Synology NAS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to NAS via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.NAS_USER }}@${{ secrets.NAS_HOST }} << 'EOF'
+            cd ${{ secrets.NAS_PATH }}
+            git pull origin main
+            npm install --production
+            npm run build
+            pm2 restart my-board-site || pm2 start npm --name "my-board-site" -- start
+          EOF
